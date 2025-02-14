@@ -6,21 +6,27 @@ import Navbar from '../components/Navbar';
 import {useNavigate} from 'react-router-dom';
 import "/src/styles/Home.css"
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Timeline from "@mui/lab/Timeline";
+import TimelineItem from "@mui/lab/TimelineItem";
+import TimelineSeparator from "@mui/lab/TimelineSeparator";
+import TimelineDot from "@mui/lab/TimelineDot";
+import TimelineConnector from "@mui/lab/TimelineConnector";
+import TimelineContent from "@mui/lab/TimelineContent";
+import Footer from "../components/Footer.jsx";
 
 const images = [
-  '/src/assets/chef.jpg',
-  '/src/assets/food.jpg',
-  '/src/assets/chef.jpg',
-  '/src/assets/food5.jpeg',
-  '/src/assets/hamburger.jpg',
+  '/src/assets/carousel/food1.png',
+  '/src/assets/carousel/food2.png',
+  '/src/assets/carousel/food3.png',
+  '/src/assets/carousel/food4.png',
 ];
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const isSmallScreen = useMediaQuery("(max-width:600px)");
   const goToPage = (page) => () => {
     navigate(`/${page}`);
   };
+  const isSmallScreen = useMediaQuery("(max-width:600px)");
 
   const fetchLastInstagramPost = async () => {
     const username = "the.sweet.spot.budapest"
@@ -37,137 +43,142 @@ const HomePage = () => {
   return (
     <>
       <Navbar/>
-      <div id="home-page">
-          {isSmallScreen ? (
-            <>
-              {/* SMALL SCREEN */}
+        <Container id={"section-1"} sx={{ minWidth: "100%", backgroundColor: "#1c1c1e", minHeight: "100dvh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+            {/*TODO CREATE SMALL SCREEN AND DESKTOP IMAGE KEEPING IN MIND THE TWO BUTTONS*/}
 
-              {/*TODO CHANGE FONT SIZE*/}
-              <Container maxWidth="100%"
-                         style={{textAlign: "center", flexGrow: 1, paddingLeft: "0", paddingRight: "0"}}>
-                {/* TITLE */}
-                <Typography className={"text-shadow"} color="primary" variant="h4" gutterBottom
-                            style={{marginTop: "15px"}}>
-                  <div className='small-text'>The best</div>
-                  <div className='highlight-pink'>HOMEMADE</div>
-                  <div className='highlight-green'>NIGERIAN</div>
-                  <div className='small-text'>food in Budapest!</div>
-                </Typography>
-
-                {/* Image Slideshow */}
-                <Carousel
-                  autoPlay
-                  interval={2500}
-                  indicators={true}
-                  style={{margin: "0"}}
-                >
-                  {images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Slide ${index + 1}`}
-                      style={{width: "100%", height: "400px", objectFit: "cover"}} // Set fixed height
-                    />
-                  ))}
-                </Carousel>
-
-                <Typography color="textSecondary" variant="body1" gutterBottom
-                            style={{margin: "30px", fontWeight: "500", fontSize: "1.2rem"}}>
-                  Experience the rich flavors and vibrant culture of Nigeria right here in the heart of Budapest.
-                </Typography>
-
-                <div style={{bottom: '0', width: '100%'}}>
-                  <Button variant="contained" color="secondary"
-                          style={{marginRight: "10px", marginBottom: "10px", width: "50%"}} onClick={goToPage("order")}>
-                    <ShoppingCartIcon/> Order Now
-                  </Button>
-                  <Button variant="contained" color="primary"
-                          style={{marginRight: "10px", marginBottom: "10px", width: "50%"}} onClick={goToPage("menu")}>
-                    <RestaurantMenuIcon/> View Menu
-                  </Button>
-                </div>
-              </Container>
-              <Container>
-
-                {/*TODO*/}
-                {/*<button onClick={fetchLastInstagramPost}>Get instagram post</button>*/}
-              </Container>
-            </>
-          ) : (
-            <>
-              {/* BIG SCREEN */}
-              <Typography className={"text-shadow"} color="primary" variant="h4" gutterBottom
-                          style={{width: "70%", textAlign: "center", marginBottom: "60px"}}>
-                <div className='white-text' style={{display: 'inline', fontWeight: 1000}}>The best</div>
-                <div className='highlight-pink padding-left-right-6px' style={{display: 'inline'}}>HOMEMADE</div>
-                <div className='highlight-green padding-left-right-6px' style={{display: 'inline'}}>NIGERIAN</div>
-                <div className='white-text' style={{display: 'inline', fontWeight: 1000}}>food in Budapest!</div>
-              </Typography>
-              <div className={"desktop-view-home"}>
-                <div className={"left-side"}>
-                  {/* Image Slideshow */}
-                  <Carousel
-                    autoPlay
-                    interval={2500}
-                    indicators={false}
-                    style={{margin: "20px 0"}}
-                  >
-                    {images.map((image, index) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`Slide ${index + 1}`}
-                        style={{
-                          width: "100%",
-                          height: "400px",
-                          objectFit: "cover",
-                          borderRadius: "10px",
-                          border: '2px solid white'
-                        }} // Set fixed height
-                      />
-                    ))}
-                  </Carousel>
-                </div>
-                <div className={"right-side"}>
-                  <Container maxWidth="sm" style={{textAlign: "center", padding: "20px", flexGrow: 1}}>
-                    <div className={"glass"} >
-                      <Typography color="textSecondary" variant="h6" gutterBottom style={{fontWeight: "bold", margin: "10px", padding: "10px", color: "white"}}>
-                        Experience the vibrant culture and
-                        <div className={"highlight-pink text-shadow padding-left-right-6px"} style={{display: 'inline'}}>rich flavors</div>
-                        of
-                        <div className={"highlight-green text-shadow padding-left-right-6px"} style={{display: 'inline'}}>homemade food of Nigeria</div>
-                        in the heart of Budapest.
-                      </Typography>
-                    </div>
+            <Button variant="contained" color="secondary" style={{marginRight: "10px", marginBottom: "10px"}}
+                    onClick={goToPage("order")}>
+              <ShoppingCartIcon/> Order Now
+            </Button>
+            <Button variant="contained" color="primary" style={{marginRight: "10px", marginBottom: "10px"}}
+                    onClick={goToPage("menu")}>
+              <RestaurantMenuIcon/> View Menu
+            </Button>
+          </Container>
 
 
-                    <div style={{marginTop: "50px", position: 'relative', bottom: '0', width: '100%'}}>
-                      <Button variant="contained" color="secondary" style={{marginRight: "10px", marginBottom: "10px"}}
-                              onClick={goToPage("order")}>
-                        <ShoppingCartIcon/> Order Now
-                      </Button>
-                      <Button variant="contained" color="primary" style={{marginRight: "10px", marginBottom: "10px"}}
-                              onClick={goToPage("menu")}>
-                        <RestaurantMenuIcon/> View Menu
-                      </Button>
-                    </div>
-                  </Container>
-                </div>
-              </div>
-              <Container>
+        <Container id={"section-2"} sx={{
+          backgroundColor: "primary",
+          paddingTop: "50px",
+          paddingBottom: "50px",
+          minWidth: "100%",
+          margin: {xs: "none", md: "20px"},
+          display: "grid",
+          gridTemplateColumns: {xs: "1fr", md: "1fr 0.7fr 1fr"},
+          border: {xs: "none", md: "3px solid white"},
+        }} >
+          <Carousel
+            //autoPlay
+            interval={3000}
+            indicators={false}
+            navButtonsAlwaysVisible
+            sx={{
+              maxWidth: "500px",
+              aspectRatio: "1 / 1.2", // Ensures it's a square
+              objectFit: "cover",
+            }}          >
+            {images.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Slide ${index + 1}`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }} // Set fixed height
+              />
+            ))}
+          </Carousel>
 
-                {/*TODO*/}
-                {/*<button onClick={fetchLastInstagramPost}>Get instagram post</button>*/}
-              </Container>
-            </>
-          )
-          }
+          <Timeline
+            position="right"
+            sx={{
+              paddingTop: "100px",
+              fontFamily: "Caveat",
+              display: { xs: "none", md: "block" },
+              ml: "-120px", // Moves everything left
+            }}
+          >
+            {[
+              "Select Items",
+              "Select Delivery Method",
+              "Select Delivery Time",
+              "Place Order",
+              "Repeat"
+            ].map((text, index) => (
+              <TimelineItem key={index}>
+                <TimelineSeparator>
+                  <TimelineDot />
+                  {index < 4 && <TimelineConnector />} {/* Keeps lines between steps */}
+                </TimelineSeparator>
+                <TimelineContent sx={{ fontFamily: "Caveat", fontSize: "20px", ml: "-10px", fontWeight: "bold"}}>
+                  {text}
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+
+          <Container sx={{display: "flex", alignItems: "center", flexDirection: "column"}}>
+            <Typography
+              variant="body1"
+              sx={{
+                paddingTop: {sx: "none", md: "120px"},
+                paddingRight: {sx: "none", sm: "none",  md: "100px"},
+                fontSize: { xs: "16px", md: "18px" },
+                lineHeight: 1.8,
+                color: "text.primary",
+                fontWeight: 400,
+                textAlign: "justify",
+                maxWidth: "600px"
+              }}
+            >
+              Experience a seamless journey through our interactive platform.
+              From selecting your favorite items to placing an order, everything is
+              designed for convenience and simplicity.
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                paddingTop: {sx: "none", md: "60px"},
+                paddingLeft: {sx: "none", sm: "none", md: "10px"},
+                paddingRight: {sx: "none", sm: "none",  md: "100px"},
+                fontSize: { xs: "16px", md: "18px" },
+                lineHeight: 1.6,
+                color: "text.primary",
+                fontWeight: 400,
+                textAlign: "justify",
+                maxWidth: "600px"
+              }}
+            >
+              Every great experience starts with a simple choice.
+              Take control, select your favorites, and let us handle the rest.
+              Smooth, fast, and effortless—just the way it should be.
+            </Typography>
+
+            <Button variant="contained" color="primary" style={{ }}
+                    onClick={goToPage("menu")}>
+              <RestaurantMenuIcon/> View Menu
+            </Button>
+          </Container>
+
+        </Container>
 
 
+      <Container id={"section-3"} >
+
+      </Container>
+
+      <Container id={"section-4"} >
+
+      </Container>
+
+      {/*TODO*/}
+          {/*<button onClick={fetchLastInstagramPost}>Get instagram post</button>*/}
 
         {/*      TODO FOOTER*/}
-
-      </div>
+      <Footer></Footer>
     </>
   );
 };

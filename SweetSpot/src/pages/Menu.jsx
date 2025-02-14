@@ -5,6 +5,7 @@ import "/src/index.css"
 import "/src/styles/Menu.css"
 
 import { menuItems } from "../components/menu";
+import Footer from "../components/Footer.jsx";
 
 export default function Menu() {
   return (
@@ -58,6 +59,7 @@ export default function Menu() {
         </Box>
       </Container>
     </div>
+      <Footer></Footer>
     </>
   );
 }

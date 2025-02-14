@@ -8,11 +8,13 @@ import Menu from "/src/pages/Menu";
 import Order from "/src/pages/Order";
 
 import "./index.css";
+import ErrorElement from "./components/ErrorElement.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Home/>,
+    errorElement: <ErrorElement />,
   },
   {
     path: "/order",
@@ -20,6 +22,9 @@ const router = createBrowserRouter([
   },  {
     path: "/menu",
     element: <Menu />,
+  },{
+    path: "*", // ✅ Catch-all route for unknown pages
+    element: <ErrorElement />,
   }
 ]);
 
