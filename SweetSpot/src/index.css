@@ -1,0 +1,11 @@
+#menu-page{
+  background-image: url("/assets/pink-bg.png");
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body{
+  font-family: "Caveat", "Lato";
+}

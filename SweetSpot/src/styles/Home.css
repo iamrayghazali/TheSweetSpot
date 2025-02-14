@@ -1,0 +1,86 @@
+#home-page {
+    background-image: url("/src/assets/pink-bg.png");
+    background-size: contain;
+    min-height: 500vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30px;
+}
+
+.highlight-green {
+    color: #008751;
+    font-weight: 1000;
+    padding: 2px;
+}
+
+.highlight-pink {
+    color: #dd3189;
+    font-weight: 1000;
+    line-height: 1.2;
+    padding: 2px;
+}
+
+.text-shadow {
+    text-shadow: 2px 3px 8px rgba(0, 0, 0, 0.65);
+}
+
+.padding-left-right-6px {
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+.glass {
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(5.1px);
+    -webkit-backdrop-filter: blur(5.1px);
+}
+
+.small-text {
+    color: white;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.right-side {
+    padding: 40px;
+}
+
+.white-text {
+    color: white;
+    font-weight: 300;
+}
+
+.desktop-view-home {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+    width: 90%;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    #home-page {
+        background: rgb(221, 49, 137);
+        background: linear-gradient(90deg, rgba(221, 49, 137, 1) 0%, rgba(0, 135, 81, 1) 100%);
+    }
+
+    .MuiButton-root {
+        width: 100%; /* Make buttons full width on mobile */
+        margin-bottom: 10px;
+    }
+
+    #home-page {
+        background: rgb(221, 49, 137);
+        background: linear-gradient(90deg, rgba(221, 49, 137, 1) 0%, rgba(0, 135, 81, 1) 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+}

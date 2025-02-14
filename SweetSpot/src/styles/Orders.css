@@ -1,0 +1,20 @@
+#order-page{
+  padding: 10px;
+  background-image: url("/src/assets/pink-bg.png");
+  color: white;
+}
+
+
+
+form{
+  display: flex;
+  flex-direction: column;
+}
+
+#form-container{
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(5.1px);
+    -webkit-backdrop-filter: blur(5.1px);
+}
