@@ -70,15 +70,21 @@ const Navbar = () => {
 
   return (
     <Box sx={{flexGrow: 1}}>
-      <AppBar position="static">
+      <AppBar position="fixed" style={{height: "70px", background: "transparent", backdropFilter: "blur(10px)", borderBottom: "1px solid #0000020"}}>
         <Toolbar>
           <img
             onClick={goToPage("")}
             src={logo}
             alt="-logo-"
-            style={{ marginRight: "10px", height: "30px", cursor: "pointer" }} // Adjust the height and margin as needed
+            style={{marginRight: "10px", height: "40px", cursor: "pointer"}} // Adjust the height and margin as needed
           />
-          <Typography onClick={goToPage("")} color="secondary" variant="h6" component="div" sx={{flexGrow: 1, fontWeight: "bold", cursor: "pointer"}}>
+          <Typography onClick={goToPage("")} color="secondary" variant="h4" component="div" sx={{
+            flexGrow: 1, fontWeight: "bold", cursor: "pointer", textShadow: `
+      3px 3px 8px rgba(0, 0, 0, 0.9),  /* Strong dark shadow */
+      -3px -3px 8px rgba(0, 0, 0, 0.9), /* Mirror shadow for better contrast */
+      0px 0px 12px rgba(0, 0, 0, 1)  /* Extra glow effect */
+    `, fontFamily: "Caveat"
+          }}>
             The Sweet Spot
           </Typography>
 
@@ -98,6 +104,7 @@ const Navbar = () => {
                 onClick={goToPage("")}
                 sx={{
                   backgroundColor: "primary.main",
+                  marginLeft: "15px",
                   "&:hover": {
                     backgroundColor: "secondary.main",
                   },
@@ -110,6 +117,8 @@ const Navbar = () => {
                 onClick={goToPage("menu")}
                 sx={{
                   backgroundColor: "primary.main",
+                  marginLeft: "15px",
+
                   "&:hover": {
                     backgroundColor: "secondary.main",
                   },
@@ -122,6 +131,7 @@ const Navbar = () => {
                 onClick={goToPage("order")}
                 sx={{
                   backgroundColor: "primary.main",
+                  marginLeft: "15px",
                   "&:hover": {
                     backgroundColor: "secondary.main",
                   },
