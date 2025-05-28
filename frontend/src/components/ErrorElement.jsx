@@ -9,7 +9,7 @@ export default function ErrorElement() {
       <Navbar></Navbar>
       <Box
         sx={{
-          height: "100vh",
+          height: "91vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

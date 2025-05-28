@@ -15,12 +15,12 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import logo from '../assets/icon.png';
+import logo from "../assets/icon.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery("(max-width:600px)");
-  const [drawerOpen, setDrawerOpen] = useState(false); // State for drawer open/close
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const goToPage = (page) => () => {
     navigate(`/${page}`);
@@ -35,8 +35,8 @@ const Navbar = () => {
     <Box
       sx={{width: 150, backgroundColor: "primary.main", color: "secondary.main", height: "100%", borderLeft: "2px solid white"}} // Width of the drawer
       role="presentation"
-      onClick={toggleDrawer(false)} // Close drawer on item click
-      onKeyDown={toggleDrawer(false)} // Close drawer on key press
+      onClick={toggleDrawer(false)}
+      onKeyDown={toggleDrawer(false)}
     >
       <List style={{fontWeight: "bold"}}>
         <ListItem onClick={goToPage("")} style={{borderBottom: "1px solid secondary.main"}}>
@@ -76,7 +76,7 @@ const Navbar = () => {
             onClick={goToPage("")}
             src={logo}
             alt="-logo-"
-            style={{marginRight: "10px", height: "40px", cursor: "pointer"}} // Adjust the height and margin as needed
+            style={{marginRight: "10px", height: "40px", cursor: "pointer"}}
           />
           <Typography onClick={goToPage("")} color="secondary" variant="h4" component="div" sx={{
             flexGrow: 1, fontWeight: "bold", cursor: "pointer", textShadow: `
