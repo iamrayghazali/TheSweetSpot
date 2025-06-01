@@ -7,17 +7,18 @@ Welcome to **The Sweet Spot**, a full-stack web application designed for orderin
 
 ## 📖 Table of Contents
 
-1. About The Project
-2. Tech Stack
-3. Folder Structure
-4. Getting Started
-   - Prerequisites
-   - Installation
-   - Running Locally
-   - Environment Variables
-5. API Documentation
-6. Contact
-7. License
+
+1. [About The Project](#-about-the-project)
+2. [Tech Stack](#-tech-stack)
+3. [Folder Structure](#-folder-structure)
+4. [Getting Started](#-getting-started)
+   - [Prerequisites](#-prerequisites)
+   - [Installation](#-installation)
+   - [Running Locally](#-running-locally)
+   - [Environment Variables](#-environment-variables)
+5. [API Documentation](#-api-documentation)
+6. [Contact](#-contact)
+7. [License](#-license)
 
 ---
 
