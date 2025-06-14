@@ -2,10 +2,8 @@ import bcrypt from "bcrypt";
 import mysql from "mysql2";
 import dotenv from "dotenv";
 
-// Load environment variables
 dotenv.config();
 
-// Create MySQL connection
 const db = mysql.createConnection({
   host: process.env.SQL_HOST,
   user: process.env.SQL_USER,
@@ -13,11 +11,10 @@ const db = mysql.createConnection({
   database: process.env.SQL_DATABASE,
 });
 
-// Function to create test user with hashed password
 const createTestUser = async () => {
-  const username = "admin"; // Test username
-  const password = "admin"; // Test password (will be hashed)
-  const role = "admin"; // User role
+  const username = "admin";
+  const password = "admin";
+  const role = "admin";
 
   try {
     // Hash the password using bcrypt
