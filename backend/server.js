@@ -10,11 +10,12 @@ dotenv.config();
 
 const app = express();
 const PORT = 5550;
+const db = await initDB();
 
 app.use(express.json());
 app.use(helmet());
 
-const db = await initDB();
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -23,7 +24,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5, // Limit each IP to 5 login attempts per windowMs
@@ -31,7 +31,6 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-
 const emailOrderLimiter = rateLimit({
     windowMs: 3 * 60 * 60 * 1000, // 3 hours
     max: 2, // 2 orders max per window
@@ -44,12 +43,29 @@ const emailOrderLimiter = rateLimit({
         });
     }
 });
+const verifyPassword = async (inputPassword, storedHash) => {
+    return await bcrypt.compare(inputPassword, storedHash);
+};
+const findUserHashedPassword = async (inputUsername) => {
+    const [rows] = await db.query('SELECT password_hash FROM admin WHERE username = ?', [inputUsername]);
 
+    if (rows.length === 0) {
+        return null;
+    }
+    return rows[0].password_hash;
+};
+
+
+// Server Status
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// Menu
 app.get("/api/menu", async (req, res) => {
     const [rows] = await db.query('SELECT * FROM menu');
     return res.status(200).json(rows);
 });
-
 app.get("/api/menu/:id", async (req, res) => {
     try {
         const {id} = req.params;
@@ -66,7 +82,6 @@ app.get("/api/menu/:id", async (req, res) => {
         return res.status(500).json({error: "Internal Server Error"});
     }
 });
-
 app.put("/api/admin/menu/:id", async (req, res) => {
     const {id} = req.params;
     const {title, price, description, image_url} = req.body;
@@ -92,7 +107,6 @@ app.put("/api/admin/menu/:id", async (req, res) => {
         return res.status(500).json({message: 'Internal server error'});
     }
 });
-
 app.delete("/api/admin/menu/:id", async (req, res) => {
     const {id} = req.params;
 
@@ -110,6 +124,7 @@ app.delete("/api/admin/menu/:id", async (req, res) => {
     }
 });
 
+// Auth
 app.post("/api/admin/login", loginLimiter, async (req, res) => {
     try {
         const inputPassword = req.body.password;
@@ -136,8 +151,38 @@ app.post("/api/admin/login", loginLimiter, async (req, res) => {
     }
 });
 
-// TODO: Change email destination in mailOptions
+// Order
+app.get("/api/orders", async (req, res) => {
+        const [rows] = await  db.query('SELECT * FROM orders');
+        res.status(200).json(rows);
+});
+app.get("/api/order/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const [row] = await  db.query('SELECT * FROM orders WHERE id = ?', [id]);
+        res.status(200).json(row);
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({success: false, error: e.message});
+    }
+});
+app.post('/api/order/:id/delivery-date', async (req, res) => {
+    const { id } = req.params;
+    const { delivery_date } = req.body;
+
+    try {
+        await db.query(
+            'UPDATE orders SET delivery_date = ? WHERE id = ?',
+            [delivery_date, id]
+        );
+        res.json({ success: true, message: 'Delivery date updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 app.post('/api/email', emailOrderLimiter, async (req, res) => {
+    // TODO: Change email destination in mailOptions
     const {user_name, user_email, phone_number, cart, message, delivery_method} = req.body;
 
     const calculatePrice = () => {
@@ -200,8 +245,6 @@ app.post('/api/email', emailOrderLimiter, async (req, res) => {
     };
 
     try {
-        // Save order to database
-        // 1. Insert into `orders` table
         const [orderResult] = await db.query(`
             INSERT INTO orders (customer_name,
                                 email,
@@ -213,9 +256,8 @@ app.post('/api/email', emailOrderLimiter, async (req, res) => {
             VALUES (?, ?, ?, ?, NOW(), ?, NULL)
         `, [user_name, user_email, phone_number, message, delivery_method]);
 
-        const orderId = orderResult.insertId; // 2. Get inserted order ID
+        const orderId = orderResult.insertId;
 
-        // 3. Insert each cart item into `order_items`
         for (const item of cart) {
             await db.query(`
                         INSERT INTO order_items (order_id, menu_id, quantity)
@@ -225,8 +267,10 @@ app.post('/api/email', emailOrderLimiter, async (req, res) => {
         }
 
         // Send the email
+        // To the kitchen
         await transporter.sendMail(mailOptions);
-        await transporter.sendMail(customerMailOptions); // goes to user
+        // To the user
+        await transporter.sendMail(customerMailOptions);
 
         res.json({success: true});
     } catch (error) {
@@ -235,6 +279,7 @@ app.post('/api/email', emailOrderLimiter, async (req, res) => {
     }
 });
 
+// Kill switch to orders
 app.get('/api/settings', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT order_status FROM settings LIMIT 1');
@@ -244,7 +289,6 @@ app.get('/api/settings', async (req, res) => {
         res.status(500).json({ error: 'Could not fetch settings' });
     }
 });
-
 app.patch('/api/settings/switch', async (req, res) => {
     const { orderStatus } = req.body;
     try {
@@ -254,23 +298,6 @@ app.patch('/api/settings/switch', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Could not update settings' });
     }
-});
-
-const verifyPassword = async (inputPassword, storedHash) => {
-    return await bcrypt.compare(inputPassword, storedHash);
-};
-
-const findUserHashedPassword = async (inputUsername) => {
-    const [rows] = await db.query('SELECT password_hash FROM admin WHERE username = ?', [inputUsername]);
-
-    if (rows.length === 0) {
-        return null;
-    }
-    return rows[0].password_hash;
-};
-
-app.get('/health', (req, res) => {
-    res.status(200).send('OK');
 });
 
 app.listen(PORT, function () {
