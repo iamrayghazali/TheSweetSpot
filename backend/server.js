@@ -4,15 +4,18 @@ import rateLimit from 'express-rate-limit';
 import {initDB} from './dbconnection.js';
 import dotenv from 'dotenv';
 import nodemailer from "nodemailer";
+import helmet from 'helmet';
 
 dotenv.config();
 
 const app = express();
 const PORT = 5550;
+const db = await initDB();
 
 app.use(express.json());
+app.use(helmet());
 
-const db = await initDB();
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -21,7 +24,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5, // Limit each IP to 5 login attempts per windowMs
@@ -29,7 +31,6 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-
 const emailOrderLimiter = rateLimit({
     windowMs: 3 * 60 * 60 * 1000, // 3 hours
     max: 2, // 2 orders max per window
@@ -42,13 +43,30 @@ const emailOrderLimiter = rateLimit({
         });
     }
 });
+const verifyPassword = async (inputPassword, storedHash) => {
+    return await bcrypt.compare(inputPassword, storedHash);
+};
+const findUserHashedPassword = async (inputUsername) => {
+    const [rows] = await db.query('SELECT password_hash FROM admin WHERE username = ?', [inputUsername]);
 
-app.get("/api/admin/menu", async (req, res) => {
+    if (rows.length === 0) {
+        return null;
+    }
+    return rows[0].password_hash;
+};
+
+
+// Server Status
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// Menu
+app.get("/api/menu", async (req, res) => {
     const [rows] = await db.query('SELECT * FROM menu');
     return res.status(200).json(rows);
 });
-
-app.get("/api/admin/menu/:id", async (req, res) => {
+app.get("/api/menu/:id", async (req, res) => {
     try {
         const {id} = req.params;
 
@@ -64,7 +82,6 @@ app.get("/api/admin/menu/:id", async (req, res) => {
         return res.status(500).json({error: "Internal Server Error"});
     }
 });
-
 app.put("/api/admin/menu/:id", async (req, res) => {
     const {id} = req.params;
     const {title, price, description, image_url} = req.body;
@@ -90,7 +107,24 @@ app.put("/api/admin/menu/:id", async (req, res) => {
         return res.status(500).json({message: 'Internal server error'});
     }
 });
+app.delete("/api/admin/menu/:id", async (req, res) => {
+    const {id} = req.params;
 
+    try {
+        const [result] = await db.query("DELETE FROM menu WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({message: "Item not found"});
+        }
+
+        res.status(200).json({message: "Item deleted successfully"});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({message: "Server error"});
+    }
+});
+
+// Auth
 app.post("/api/admin/login", loginLimiter, async (req, res) => {
     try {
         const inputPassword = req.body.password;
@@ -117,57 +151,154 @@ app.post("/api/admin/login", loginLimiter, async (req, res) => {
     }
 });
 
+// Order
+app.get("/api/orders", async (req, res) => {
+        const [rows] = await  db.query('SELECT * FROM orders');
+        res.status(200).json(rows);
+});
+app.get("/api/order/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const [row] = await  db.query('SELECT * FROM orders WHERE id = ?', [id]);
+        res.status(200).json(row);
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({success: false, error: e.message});
+    }
+});
+app.post('/api/order/:id/delivery-date', async (req, res) => {
+    const { id } = req.params;
+    const { delivery_date } = req.body;
+
+    try {
+        await db.query(
+            'UPDATE orders SET delivery_date = ? WHERE id = ?',
+            [delivery_date, id]
+        );
+        res.json({ success: true, message: 'Delivery date updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 app.post('/api/email', emailOrderLimiter, async (req, res) => {
-    const { user_name, phone_number, cart, message, delivery_method } = req.body;
+    // TODO: Change email destination in mailOptions
+    const {user_name, user_email, phone_number, cart, message, delivery_method} = req.body;
 
     const calculatePrice = () => {
-        return cart.reduce((sum, item) => {
-            return sum + item.quantity * item.price;
-        }, 0);
+        return cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
     };
 
-    // TODO: Change email destination in mailOptions
+    const total_price = calculatePrice();
+
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, //here
+        to: process.env.EMAIL_USER,
         subject: `NEW ORDER - ${user_name}`,
-        html:
-            `
-        <h2>Order Details</h2>
-        <p><strong>Name:</strong> ${user_name}</p>
-        <p><strong>Phone:</strong> ${phone_number}</p>
-        <p><strong>Delivery:</strong> ${delivery_method}</p>
-        <p><strong>Message:</strong> ${message}</p>
-        <h3>Cart:</h3>
-        <ul>
-          ${cart.map(item => `<li>${item.food} <strong>x ${item.quantity}</strong> (${item.price} Ft)</li>`).join('\n')}
-        </ul>
-        <h2>Total Price: ${calculatePrice()} Ft</h2>
-        <p><em>Sent from Sweet Spot App</em></p>
+        html: `
+            <h2>Order Details</h2>
+            <p><strong>Name:</strong> ${user_name}</p>
+            <p><strong>Phone:</strong> ${phone_number}</p>
+            <p><strong>Delivery:</strong> ${delivery_method}</p>
+            <p><strong>Message:</strong> ${message}</p>
+            <h3>Cart:</h3>
+            <ul>
+              ${cart.map(item => `<li>${item.food} <strong>x ${item.quantity}</strong> (${item.price} Ft)</li>`).join('\n')}
+            </ul>
+            <h2>Total Price: ${total_price} Ft</h2>
+            <p><em>Sent from Sweet Spot App</em></p>
         `
     };
 
+    const customerMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user_email,
+        subject: `🎉 Thanks for your order, ${user_name}!`,
+        html: `
+      <div style="font-family: 'Arial', sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto; background: #fff3f8; border-radius: 10px; border: 1px solid #ffd6e8;">
+        <h1 style="color: #d6336c;">Sweet Spot 🍰</h1>
+        <h2 style="margin-top: 0;">Hey ${user_name},</h2>
+        <p>Thank you for placing an order with us! Here’s a summary of what you asked for:</p>
+
+        <hr style="border: none; border-top: 1px solid #ffd6e8;" />
+
+        <p><strong>📞 Phone:</strong> ${phone_number}</p>
+        <p><strong>🚚 Delivery method:</strong> ${delivery_method}</p>
+        <p><strong>📝 Note:</strong> ${message || "No special requests"}</p>
+
+        <h3 style="margin-top: 30px;">🛒 Your Cart</h3>
+        <ul style="padding-left: 20px;">
+          ${cart.map(item => `
+            <li style="margin-bottom: 5px;">
+              <strong>${item.food}</strong> x ${item.quantity} – ${item.price} Ft
+            </li>
+          `).join('')}
+        </ul>
+
+        <h2 style="color: #d6336c;">Total: ${total_price} Ft</h2>
+
+        <p>We’ll get started right away and be in touch if needed. You’ll hear from us soon!</p>
+
+        <p style="margin-top: 40px;"><em>With love,</em><br><strong>The Sweet Spot Team 💖</strong></p>
+      </div>
+    `
+    };
+
     try {
+        const [orderResult] = await db.query(`
+            INSERT INTO orders (customer_name,
+                                email,
+                                phone_number,
+                                special_requests,
+                                order_date,
+                                delivery_type,
+                                delivery_date)
+            VALUES (?, ?, ?, ?, NOW(), ?, NULL)
+        `, [user_name, user_email, phone_number, message, delivery_method]);
+
+        const orderId = orderResult.insertId;
+
+        for (const item of cart) {
+            await db.query(`
+                        INSERT INTO order_items (order_id, menu_id, quantity)
+                        VALUES (?, ?, ?)`,
+                [orderId, item.id, item.quantity]
+            );
+        }
+
+        // Send the email
+        // To the kitchen
         await transporter.sendMail(mailOptions);
-        res.json({ success: true });
+        // To the user
+        await transporter.sendMail(customerMailOptions);
+
+        res.json({success: true});
     } catch (error) {
-        console.error('Email send error:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Order error:', error);
+        res.status(500).json({success: false, error: error.message});
     }
 });
 
-const verifyPassword = async (inputPassword, storedHash) => {
-    return await bcrypt.compare(inputPassword, storedHash);
-};
-
-const findUserHashedPassword = async (inputUsername) => {
-    const [rows] = await db.query('SELECT password_hash FROM admin WHERE username = ?', [inputUsername]);
-
-    if (rows.length === 0) {
-        return null;
+// Kill switch to orders
+app.get('/api/settings', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT order_status FROM settings LIMIT 1');
+        res.json({ orderStatus: rows[0].order_status });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Could not fetch settings' });
     }
-    return rows[0].password_hash;
-};
+});
+app.patch('/api/settings/switch', async (req, res) => {
+    const { orderStatus } = req.body;
+    try {
+        await db.query('UPDATE settings SET order_status = ? WHERE id = 1', [orderStatus]);
+        res.json({ success: true, orderStatus });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Could not update settings' });
+    }
+});
 
 app.listen(PORT, function () {
     console.log(`Your server is running on port: ${PORT}`);
