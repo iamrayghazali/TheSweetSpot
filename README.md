@@ -1,6 +1,12 @@
 
 # 🥘 Sweet Spot — Full Stack Nigerian Food Ordering Platform
 
+![home-page.png](screenshots/main.png)
+
+---
+
+![info.png](screenshots/info.png)
+
 Welcome to **The Sweet Spot**, a full-stack web application designed for ordering authentic Nigerian cuisine in Budapest, Hungary. This platform connects hungry customers with the best homemade meals, allows easy ordering, and keeps users updated with the latest news from the kitchen.
 
 ---
